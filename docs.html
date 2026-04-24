@@ -492,73 +492,80 @@
                 </div>
             </div>
 
-            <div class="card">
-                <h3>Tier Pago — Custos</h3>
-                <p>Para uso intensivo ou com dados sensiveis. Ativacao: minimo de $10 pre-pagos no AI Studio.</p>
-                <table class="comparison-table">
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Preco (por 1M tokens)</th>
-                    </tr>
-                    <tr>
-                        <td>Input — texto/imagem</td>
-                        <td>$0.30</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Input — audio</strong></td>
-                        <td><strong>$1.00</strong></td>
-                    </tr>
-                    <tr>
-                        <td>Output (transcricao)</td>
-                        <td>$2.50</td>
-                    </tr>
-                    <tr>
-                        <td>Input audio (Batch API, ~50% off)</td>
-                        <td>$0.50</td>
-                    </tr>
-                </table>
+        </section>
 
+        <section class="section">
+            <h2 class="section-title">Como Usar</h2>
+
+            <div class="card">
+                <h3>Direto no terminal</h3>
+                <p>O jeito mais simples — roda o script direto.</p>
+                <div class="code-block">
+                    <code><span class="comment"># Transcrever um audio</span>
+<span class="command">transcribe</span> ~/Downloads/reuniao.m4a
+
+<span class="comment"># Transcrever pasta inteira</span>
+<span class="command">transcribe</span> <span class="string">--folder</span> ~/Downloads/Audios
+
+<span class="comment"># Segmentos menores (se der rate limit)</span>
+<span class="command">transcribe</span> audio.mp3 <span class="string">--segment-duration 5</span></code>
+                </div>
+                <p style="margin-top: 8px;">Saida em <code>~/Documentos/Transcricoes/2026-04-02 — Tema.md</code></p>
+            </div>
+
+            <div class="card">
+                <h3>Via Claude Code</h3>
+                <p>Voce pode pedir pro Claude Code rodar a transcricao direto na conversa. Como o <code>GEMINI_API_KEY</code> ja esta no <code>~/.zshrc</code>, o script funciona sem configuracao adicional.</p>
+                <div class="code-block">
+                    <code><span class="comment"># No chat do Claude Code, basta pedir:</span>
+"transcreve o audio ~/Downloads/reuniao.m4a"
+
+<span class="comment"># O Claude vai rodar algo como:</span>
+<span class="command">~/venvs/transcribe/bin/python</span> transcribe_audio.py ~/Downloads/reuniao.m4a</code>
+                </div>
                 <div class="highlight-box">
-                    <h5>Estimativa de custo</h5>
-                    <p>Audio de 1 hora transcreve por centavos. O custo principal e o input de audio ($1/1M tokens). Na pratica, mesmo transcrevendo dezenas de reunioes por mes, o custo fica abaixo de $5.</p>
+                    <h5>Dica</h5>
+                    <p>Se o alias <code>transcribe</code> esta configurado no <code>~/.zshrc</code>, o Claude Code ja consegue usar direto. Caso contrario, ele usa o caminho completo do venv.</p>
                 </div>
             </div>
 
             <div class="card">
-                <h3>Google AI Studio vs Vertex AI</h3>
-                <table class="comparison-table">
-                    <tr>
-                        <th>Aspecto</th>
-                        <th>AI Studio (esse projeto)</th>
-                        <th>Vertex AI</th>
-                    </tr>
-                    <tr>
-                        <td>Para quem</td>
-                        <td>Devs individuais, prototipos</td>
-                        <td>Empresas, producao em escala</td>
-                    </tr>
-                    <tr>
-                        <td>Autenticacao</td>
-                        <td>API key simples (<code>AIza...</code>)</td>
-                        <td>Service accounts GCP</td>
-                    </tr>
-                    <tr>
-                        <td>Free tier</td>
-                        <td>Sim (sem cartao)</td>
-                        <td>Nao — tudo cobrado</td>
-                    </tr>
-                    <tr>
-                        <td>Dados p/ treinamento</td>
-                        <td>Sim (free) / Nao (pago)</td>
-                        <td>Nunca</td>
-                    </tr>
-                    <tr>
-                        <td>Setup</td>
-                        <td>5 minutos</td>
-                        <td>GCP project + IAM + service account</td>
-                    </tr>
-                </table>
-                <p style="margin-top: 12px;"><strong>Recomendacao:</strong> Use AI Studio. Se precisar de SLA enterprise ou garantia de privacidade no free tier, migre para Vertex AI (mudanca minima no codigo).</p>
+                <h3>Como Skill no Claude Code</h3>
+                <p>Para automatizar ainda mais, crie uma skill em <code>~/.claude/skills/</code> que o Claude Code invoca quando voce pede pra transcrever.</p>
+                <div class="code-block">
+                    <code><span class="comment"># Criar o arquivo da skill</span>
+<span class="command">mkdir</span> -p ~/.claude/skills/transcribe-audio
+<span class="command">cat</span> > ~/.claude/skills/transcribe-audio/SKILL.md << 'EOF'
+---
+name: transcribe-audio
+description: Transcribe audio files using Gemini AI. Use when
+  the user asks to transcribe, convert audio to text, or process
+  meeting recordings.
+---
+
+Run the transcription script on the audio file provided by the
+user. The script splits long audio into segments, transcribes
+each via Gemini, and saves the result as Markdown.
+
+## Steps
+
+1. Identify the audio file path from the user's message
+2. Run the transcription:
+   ```bash
+   ~/venvs/transcribe/bin/python \
+     ~/path/to/transcribe_audio.py &lt;audio_file&gt;
+   ```
+3. Read the output file from ~/Documentos/Transcricoes/
+4. Show a summary of the transcription to the user
+
+## Notes
+- Supported formats: mp3, m4a, wav, ogg, aac, flac
+- For long audios, use --segment-duration 5 if rate limited
+- Output dir can be changed with --output
+- GEMINI_API_KEY must be set in the environment
+EOF</code>
+                </div>
+                <p style="margin-top: 12px;">Depois disso, quando voce pedir <code>"transcreve esse audio"</code> no Claude Code, ele vai reconhecer a skill e executar automaticamente.</p>
             </div>
         </section>
 
