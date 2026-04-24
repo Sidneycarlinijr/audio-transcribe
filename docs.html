@@ -285,6 +285,40 @@
         </header>
 
         <section class="section">
+            <h2 class="section-title">Como Usar</h2>
+
+            <div class="card">
+                <h3>Com Claude Code <span class="badge badge-green">Recomendado</span></h3>
+                <p>Clone o repo e abra com Claude Code. A skill de transcricao e descoberta automaticamente.</p>
+                <div class="code-block">
+                    <code><span class="command">git clone</span> https://github.com/Sidneycarlinijr/audio-transcribe.git
+<span class="command">cd</span> audio-transcribe
+<span class="comment"># abra o Claude Code aqui</span></code>
+                </div>
+                <p style="margin-top: 12px;">Na conversa, peca:</p>
+                <div class="code-block">
+                    <code>"transcreve o audio ~/Downloads/reuniao.m4a"</code>
+                </div>
+                <p style="margin-top: 12px;">O repo inclui <code>CLAUDE.md</code> e uma skill embutida (<code>.claude/skills/transcribe/</code>) — o Claude Code faz o setup se necessario e entrega a transcricao.</p>
+            </div>
+
+            <div class="card">
+                <h3>Direto no terminal</h3>
+                <div class="code-block">
+                    <code><span class="comment"># Arquivo unico</span>
+<span class="command">python</span> transcribe_audio.py audio.mp3
+
+<span class="comment"># Pasta inteira</span>
+<span class="command">python</span> transcribe_audio.py <span class="string">--folder</span> ~/Audios
+
+<span class="comment"># Segmentos menores (se der rate limit)</span>
+<span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span></code>
+                </div>
+                <p style="margin-top: 8px;"><strong>Saida:</strong> <code>~/Documentos/Transcricoes/2026-04-02 — Tema.md</code></p>
+            </div>
+        </section>
+
+        <section class="section">
             <h2 class="section-title">O Que Faz?</h2>
             <div class="feature-grid">
                 <div class="feature-item">
@@ -494,79 +528,6 @@
 
         </section>
 
-        <section class="section">
-            <h2 class="section-title">Como Usar</h2>
-
-            <div class="card">
-                <h3>Direto no terminal</h3>
-                <p>O jeito mais simples — roda o script direto.</p>
-                <div class="code-block">
-                    <code><span class="comment"># Transcrever um audio</span>
-<span class="command">transcribe</span> ~/Downloads/reuniao.m4a
-
-<span class="comment"># Transcrever pasta inteira</span>
-<span class="command">transcribe</span> <span class="string">--folder</span> ~/Downloads/Audios
-
-<span class="comment"># Segmentos menores (se der rate limit)</span>
-<span class="command">transcribe</span> audio.mp3 <span class="string">--segment-duration 5</span></code>
-                </div>
-                <p style="margin-top: 8px;">Saida em <code>~/Documentos/Transcricoes/2026-04-02 — Tema.md</code></p>
-            </div>
-
-            <div class="card">
-                <h3>Via Claude Code</h3>
-                <p>Voce pode pedir pro Claude Code rodar a transcricao direto na conversa. Como o <code>GEMINI_API_KEY</code> ja esta no <code>~/.zshrc</code>, o script funciona sem configuracao adicional.</p>
-                <div class="code-block">
-                    <code><span class="comment"># No chat do Claude Code, basta pedir:</span>
-"transcreve o audio ~/Downloads/reuniao.m4a"
-
-<span class="comment"># O Claude vai rodar algo como:</span>
-<span class="command">~/venvs/transcribe/bin/python</span> transcribe_audio.py ~/Downloads/reuniao.m4a</code>
-                </div>
-                <div class="highlight-box">
-                    <h5>Dica</h5>
-                    <p>Se o alias <code>transcribe</code> esta configurado no <code>~/.zshrc</code>, o Claude Code ja consegue usar direto. Caso contrario, ele usa o caminho completo do venv.</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Como Skill no Claude Code</h3>
-                <p>Para automatizar ainda mais, crie uma skill em <code>~/.claude/skills/</code> que o Claude Code invoca quando voce pede pra transcrever.</p>
-                <div class="code-block">
-                    <code><span class="comment"># Criar o arquivo da skill</span>
-<span class="command">mkdir</span> -p ~/.claude/skills/transcribe-audio
-<span class="command">cat</span> > ~/.claude/skills/transcribe-audio/SKILL.md << 'EOF'
----
-name: transcribe-audio
-description: Transcribe audio files using Gemini AI. Use when
-  the user asks to transcribe, convert audio to text, or process
-  meeting recordings.
----
-
-Run the transcription script on the audio file provided by the
-user. The script splits long audio into segments, transcribes
-each via Gemini, and saves the result as Markdown.
-
-## Steps
-
-1. Identify the audio file path from the user's message
-2. Run the transcription:
-   ```bash
-   ~/venvs/transcribe/bin/python \
-     ~/path/to/transcribe_audio.py &lt;audio_file&gt;
-   ```
-3. Read the output file from ~/Documentos/Transcricoes/
-4. Show a summary of the transcription to the user
-
-## Notes
-- Supported formats: mp3, m4a, wav, ogg, aac, flac
-- For long audios, use --segment-duration 5 if rate limited
-- Output dir can be changed with --output
-- GEMINI_API_KEY must be set in the environment
-EOF</code>
-                </div>
-                <p style="margin-top: 12px;">Depois disso, quando voce pedir <code>"transcreve esse audio"</code> no Claude Code, ele vai reconhecer a skill e executar automaticamente.</p>
-            </div>
         </section>
 
         <section class="section">

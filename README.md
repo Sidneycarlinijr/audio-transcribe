@@ -1,110 +1,91 @@
 # Audio Transcribe
 
-Transcreve audios usando Gemini AI com identificacao de oradores e extracao de tema.
+Transcribe audio files using Gemini AI with speaker identification and automatic theme extraction.
+
+## How to Use
+
+### With Claude Code (recommended)
+
+```bash
+git clone https://github.com/Sidneycarlinijr/audio-transcribe.git
+cd audio-transcribe
+# open Claude Code here
+```
+
+Then ask:
+
+```
+"transcribe the audio ~/Downloads/meeting.m4a"
+```
+
+The repo includes `CLAUDE.md` and a built-in skill (`.claude/skills/transcribe/`) — Claude Code discovers it automatically, handles setup if needed, and delivers the transcription.
+
+### From the terminal
+
+```bash
+# Single file
+python transcribe_audio.py audio.mp3
+
+# Entire folder
+python transcribe_audio.py --folder ~/Audios
+
+# Shorter segments (if rate limited)
+python transcribe_audio.py audio.mp3 --segment-duration 5
+
+# Custom output directory
+python transcribe_audio.py audio.mp3 --output ~/Transcriptions
+```
 
 ## Setup
 
 ```bash
-# 1. Criar venv e instalar dependencias
+# 1. Create venv and install dependencies
 python3 -m venv ~/venvs/transcribe
 source ~/venvs/transcribe/bin/activate
 pip install google-generativeai pydub
 
-# 2. Instalar ffmpeg (se nao tiver)
+# 2. Install ffmpeg
 sudo apt install ffmpeg
 
-# 3. Configurar API key
-export GEMINI_API_KEY="sua_chave_aqui"
-# Gere em: https://aistudio.google.com/app/apikey
-# Adicione ao ~/.zshrc para persistir
+# 3. Configure API key
+export GEMINI_API_KEY="your_key_here"
+# Get one at: https://aistudio.google.com/app/apikey
+# Add to ~/.zshrc to persist
 
-# 4. Alias (opcional)
-alias transcribe="~/venvs/transcribe/bin/python ~/caminho/para/transcribe_audio.py"
+# 4. Alias (optional)
+alias transcribe="~/venvs/transcribe/bin/python ~/path/to/transcribe_audio.py"
 ```
 
 ### API Key — Free Tier
 
-Funciona sem cartao de credito. Limites: 10 req/min, 250 req/dia, 250k tokens/min.
+Works without a credit card. Limits: 10 req/min, 250 req/day, 250k tokens/min.
 
-> **Privacidade:** No free tier, dados podem ser usados para treinamento do modelo.
-
-## Uso
-
-```bash
-# Arquivo unico
-transcribe audio.mp3
-
-# Pasta inteira
-transcribe --folder ~/Downloads/Audios
-
-# Segmentos menores (se der rate limit)
-transcribe audio.mp3 --segment-duration 5
-
-# Pasta de saida customizada
-transcribe audio.mp3 --output ~/Transcricoes
-```
-
-### Via Claude Code
-
-O Claude Code roda o script direto na conversa — basta pedir:
-
-```
-"transcreve o audio ~/Downloads/reuniao.m4a"
-```
-
-Como o `GEMINI_API_KEY` ja esta no `~/.zshrc`, funciona sem configuracao adicional.
-
-### Como Skill no Claude Code
-
-Crie `~/.claude/skills/transcribe-audio/SKILL.md`:
-
-```markdown
----
-name: transcribe-audio
-description: Transcribe audio files using Gemini AI. Use when
-  the user asks to transcribe, convert audio to text, or process
-  meeting recordings.
----
-
-Run the transcription script on the audio file provided.
-
-## Steps
-
-1. Identify the audio file path from the user's message
-2. Run: `~/venvs/transcribe/bin/python ~/path/to/transcribe_audio.py <audio_file>`
-3. Read the output from ~/Documentos/Transcricoes/
-4. Show a summary to the user
-
-## Notes
-- Supported: mp3, m4a, wav, ogg, aac, flac
-- Long audios: use --segment-duration 5 if rate limited
-- GEMINI_API_KEY must be set in the environment
-```
+> **Privacy:** On the free tier, your data may be used for model training.
 
 ## Scripts
 
-| Script | Descricao |
-|--------|-----------|
-| `transcribe_audio.py` | Transcreve audios usando Gemini (divide, transcreve, junta) |
-| `split_audio.py` | Divide audios longos em partes de 30 min |
-| `transcribe_segment.py` | Transcreve um unico segmento com retry automatico |
+| Script | Description |
+|--------|-------------|
+| `transcribe_audio.py` | Full pipeline: split + transcribe + join → Markdown |
+| `split_audio.py` | Split long audio into 30-min segments (no AI) |
+| `transcribe_segment.py` | Transcribe a single file with automatic retry |
 
-## Saida
+## Output
 
-Arquivos `.md` em `~/Documentos/Transcricoes/`:
+Markdown files saved to `~/Documentos/Transcricoes/`:
 ```
-2026-04-02 — Tema da Reuniao.md
+2026-04-02 — Meeting Theme.md
 ```
 
-## Formatos suportados
+## Supported Formats
 
 mp3, m4a, wav, ogg, aac, flac
 
 ## Troubleshooting
 
-| Erro | Solucao |
-|------|---------|
-| `GEMINI_API_KEY nao definida` | `export GEMINI_API_KEY="key"` no `~/.zshrc` |
-| `pydub nao instalado` | `pip install pydub` no venv |
-| `ffmpeg nao encontrado` | `sudo apt install ffmpeg` |
+| Error | Fix |
+|-------|-----|
+| `GEMINI_API_KEY not set` | `export GEMINI_API_KEY="key"` in `~/.zshrc` |
+| `pydub not installed` | `pip install pydub` in the venv |
+| `ffmpeg not found` | `sudo apt install ffmpeg` |
 | Rate limit / 429 | Use `--segment-duration 5` |
