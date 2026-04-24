@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcribe - Documentacao</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #a1a1aa;
+            font-size: 1.1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin: 5px;
+        }
+
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-purple { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        .badge-orange { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            color: #a1a1aa;
+            line-height: 1.7;
+        }
+
+        .code-block {
+            background: #0d1117;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .code-block code {
+            color: #e6edf3;
+            white-space: pre;
+        }
+
+        .code-block .comment {
+            color: #8b949e;
+        }
+
+        .code-block .command {
+            color: #7ee787;
+        }
+
+        .code-block .string {
+            color: #a5d6ff;
+        }
+
+        .steps {
+            counter-reset: step;
+        }
+
+        .step {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 24px;
+        }
+
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .step h4 {
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .step p {
+            color: #a1a1aa;
+        }
+
+        .highlight-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .highlight-box h5 {
+            color: #3b82f6;
+            margin-bottom: 8px;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .warning-box h5 {
+            color: #f59e0b;
+            margin-bottom: 8px;
+        }
+
+        .success-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .success-box h5 {
+            color: #10b981;
+            margin-bottom: 8px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .comparison-table th {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .comparison-table td {
+            color: #a1a1aa;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .feature-item .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-item h4 {
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .feature-item p {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+        }
+
+        a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .arch-diagram {
+            background: #0d1117;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            color: #8b949e;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .arch-diagram .highlight {
+            color: #7ee787;
+        }
+
+        .arch-diagram .accent {
+            color: #a5d6ff;
+        }
+
+        .arch-diagram .warn {
+            color: #f59e0b;
+        }
+
+        .security-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .security-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .security-item p {
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        .security-item strong {
+            color: #e4e4e7;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Audio Transcribe</h1>
+            <p class="subtitle">Transcreva audios usando Gemini AI — local ou via Google Drive</p>
+            <div style="margin-top: 20px;">
+                <span class="badge badge-green">Python 3.12+</span>
+                <span class="badge badge-blue">Gemini 2.5 Flash</span>
+                <span class="badge badge-purple">Google Apps Script</span>
+                <span class="badge badge-orange">Speaker ID</span>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2 class="section-title">O Que Faz?</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="icon">🎙️</div>
+                    <h4>Transcreve Audios</h4>
+                    <p>Converte audio em texto usando Gemini AI</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">👥</div>
+                    <h4>Identifica Oradores</h4>
+                    <p>"Orador 1", "Orador 2", etc</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">✂️</div>
+                    <h4>Divide Automatico</h4>
+                    <p>Audios longos em partes menores</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🧠</div>
+                    <h4>Extrai Tema</h4>
+                    <p>Gera titulo automaticamente</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">☁️</div>
+                    <h4>Google Drive</h4>
+                    <p>Versao cloud com fila automatica</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🔄</div>
+                    <h4>Retry Automatico</h4>
+                    <p>Rate limiting com backoff exponencial</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Arquitetura</h2>
+            <div class="arch-diagram">
+<pre>
+<span class="accent">┌─────────────────────────────────────────────────────────┐</span>
+<span class="accent">│</span>  <span class="highlight">LOCAL (Python)</span>                                          <span class="accent">│</span>
+<span class="accent">│</span>                                                         <span class="accent">│</span>
+<span class="accent">│</span>  audio.mp3 ──► <span class="highlight">split_audio.py</span> ──► segmentos/             <span class="accent">│</span>
+<span class="accent">│</span>                      │                                  <span class="accent">│</span>
+<span class="accent">│</span>                      ▼                                  <span class="accent">│</span>
+<span class="accent">│</span>  audio.mp3 ──► <span class="highlight">transcribe_audio.py</span> ──► Markdown (.md)    <span class="accent">│</span>
+<span class="accent">│</span>                 (split + transcribe + join)              <span class="accent">│</span>
+<span class="accent">│</span>                      │                                  <span class="accent">│</span>
+<span class="accent">│</span>                      ├──► <span class="warn">Gemini API</span> (por segmento)      <span class="accent">│</span>
+<span class="accent">│</span>                      │                                  <span class="accent">│</span>
+<span class="accent">│</span>  segment.mp3 ► <span class="highlight">transcribe_segment.py</span> ──► stdout         <span class="accent">│</span>
+<span class="accent">│</span>                 (single file, retry logic)               <span class="accent">│</span>
+<span class="accent">└─────────────────────────────────────────────────────────┘</span>
+
+<span class="accent">┌─────────────────────────────────────────────────────────┐</span>
+<span class="accent">│</span>  <span class="highlight">CLOUD (Google Apps Script)</span>                              <span class="accent">│</span>
+<span class="accent">│</span>                                                         <span class="accent">│</span>
+<span class="accent">│</span>  Drive folder ──► <span class="highlight">audio-transcription-queue.gs</span>          <span class="accent">│</span>
+<span class="accent">│</span>                    │                                    <span class="accent">│</span>
+<span class="accent">│</span>                    ├──► Fila persistente (Properties)    <span class="accent">│</span>
+<span class="accent">│</span>                    ├──► Upload resumable (8MB chunks)    <span class="accent">│</span>
+<span class="accent">│</span>                    ├──► <span class="warn">Gemini API</span> (transcricao)          <span class="accent">│</span>
+<span class="accent">│</span>                    └──► Google Docs (saida)              <span class="accent">│</span>
+<span class="accent">└─────────────────────────────────────────────────────────┘</span>
+</pre>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Scripts Disponiveis</h2>
+
+            <div class="card">
+                <h3>transcribe_audio.py <span class="badge badge-green">Principal</span></h3>
+                <p>Script completo: divide audios longos, transcreve cada segmento via Gemini, junta tudo e salva como Markdown com tema automatico.</p>
+                <div class="code-block">
+                    <code><span class="command">python</span> transcribe_audio.py audio.mp3
+<span class="command">python</span> transcribe_audio.py <span class="string">--folder</span> ~/Audios
+<span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span>
+<span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--output</span> ~/Transcricoes</code>
+                </div>
+                <p style="margin-top: 8px;"><strong>Saida:</strong> <code>~/Documentos/Transcricoes/2026-04-02 — Tema.md</code></p>
+            </div>
+
+            <div class="card">
+                <h3>split_audio.py <span class="badge badge-blue">Utilitario</span></h3>
+                <p>Apenas divide audios longos em segmentos menores (sem transcricao). Util para pre-processar antes de transcrever ou para enviar partes menores manualmente.</p>
+                <div class="code-block">
+                    <code><span class="command">python</span> split_audio.py audio.mp3
+<span class="command">python</span> split_audio.py <span class="string">--folder</span> ~/Audios
+<span class="command">python</span> split_audio.py audio.mp3 <span class="string">--segment-duration 15</span>
+<span class="command">python</span> split_audio.py audio.mp3 <span class="string">--output</span> ~/Partes</code>
+                </div>
+                <p style="margin-top: 8px;"><strong>Saida:</strong> <code>audio_partes/audio_parte_01.mp3</code>, <code>audio_parte_02.mp3</code>, ...</p>
+            </div>
+
+            <div class="card">
+                <h3>transcribe_segment.py <span class="badge badge-purple">Leve</span></h3>
+                <p>Transcreve um unico arquivo de audio. Inclui retry com backoff exponencial para rate limiting. Saida via stdout — ideal para pipelines e composicao com outros scripts.</p>
+                <div class="code-block">
+                    <code><span class="command">python</span> transcribe_segment.py audio.mp3 > transcricao.txt</code>
+                </div>
+                <p style="margin-top: 8px;"><strong>Retry:</strong> 3 tentativas, backoff de 40s * tentativa</p>
+            </div>
+
+            <div class="card">
+                <h3>audio-transcription-queue.gs <span class="badge badge-orange">Cloud</span></h3>
+                <p>Versao Google Apps Script para processar audios diretamente do Google Drive. Sistema de fila persistente com upload resumable (chunks de 8MB), estado recuperavel e saida em Google Docs.</p>
+                <div class="highlight-box">
+                    <h5>Quando usar a versao cloud?</h5>
+                    <p>Quando voce quer processar audios automaticamente sem rodar nada local. Basta jogar o audio numa pasta do Drive e o trigger processa sozinho.</p>
+                </div>
+                <p><strong>Limitacao:</strong> Timeout de 6 minutos por execucao (contornado com fila + estado persistente).</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Comparacao: Local vs Cloud</h2>
+            <table class="comparison-table">
+                <tr>
+                    <th>Aspecto</th>
+                    <th>Python (Local)</th>
+                    <th>Apps Script (Cloud)</th>
+                </tr>
+                <tr>
+                    <td>Timeout</td>
+                    <td>Sem limite</td>
+                    <td>6 min/execucao (fila contorna)</td>
+                </tr>
+                <tr>
+                    <td>Tamanho Audio</td>
+                    <td>Qualquer</td>
+                    <td>Qualquer (upload resumable)</td>
+                </tr>
+                <tr>
+                    <td>Onde Roda</td>
+                    <td>Seu computador</td>
+                    <td>Google Cloud</td>
+                </tr>
+                <tr>
+                    <td>Automatico</td>
+                    <td>Manual (CLI)</td>
+                    <td>Sim (trigger a cada 5-10 min)</td>
+                </tr>
+                <tr>
+                    <td>Saida</td>
+                    <td>Markdown local</td>
+                    <td>Google Docs no Drive</td>
+                </tr>
+                <tr>
+                    <td>Dependencias</td>
+                    <td>Python, ffmpeg, pydub</td>
+                    <td>Nenhuma (roda no Google)</td>
+                </tr>
+                <tr>
+                    <td>Retry</td>
+                    <td>Sim (transcribe_segment.py)</td>
+                    <td>Sim (estado persistente)</td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Setup: Python (Local)</h2>
+            <div class="card">
+                <div class="steps">
+                    <div class="step">
+                        <h4>Criar venv e instalar dependencias</h4>
+                        <div class="code-block">
+                            <code><span class="command">python3</span> -m venv ~/venvs/transcribe
+<span class="command">source</span> ~/venvs/transcribe/bin/activate
+<span class="command">pip</span> install google-generativeai pydub</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <h4>Instalar ffmpeg</h4>
+                        <div class="code-block">
+                            <code><span class="command">sudo apt</span> install ffmpeg</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <h4>Configurar API Key</h4>
+                        <p>Gere sua key em <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></p>
+                        <div class="code-block">
+                            <code><span class="comment"># Adicione ao ~/.zshrc ou ~/.bashrc</span>
+<span class="command">export</span> GEMINI_API_KEY=<span class="string">"sua_key_aqui"</span></code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <h4>Adicionar alias (opcional)</h4>
+                        <div class="code-block">
+                            <code><span class="comment"># Evita ativar venv toda vez</span>
+<span class="command">alias</span> transcribe=<span class="string">"~/venvs/transcribe/bin/python transcribe_audio.py"</span></code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Setup: Google Apps Script (Cloud)</h2>
+            <div class="card">
+                <div class="steps">
+                    <div class="step">
+                        <h4>Criar projeto no Apps Script</h4>
+                        <p>Va em <a href="https://script.google.com" target="_blank">script.google.com</a> e crie um novo projeto. Cole o conteudo de <code>audio-transcription-queue.gs</code>.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Ativar Drive API</h4>
+                        <p>No editor, va em Servicos (+) e adicione <strong>Drive API v3</strong>.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Configurar Propriedades do Script</h4>
+                        <p>Va em Configuracoes do Projeto > Propriedades do script e adicione:</p>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Propriedade</th>
+                                <th>Valor</th>
+                            </tr>
+                            <tr>
+                                <td><code>GEMINI_API_KEY</code></td>
+                                <td>Sua key do Google AI Studio</td>
+                            </tr>
+                            <tr>
+                                <td><code>FOLDER_ID</code></td>
+                                <td>ID da pasta do Drive com os audios</td>
+                            </tr>
+                            <tr>
+                                <td><code>OUTPUT_FOLDER_ID</code></td>
+                                <td>ID da pasta do Drive para saida</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="step">
+                        <h4>Inicializar e criar trigger</h4>
+                        <div class="code-block">
+                            <code><span class="comment">// Execute uma vez:</span>
+inicializarSistema()
+
+<span class="comment">// Depois configure trigger:</span>
+<span class="comment">// Triggers > Add trigger > processarProximoDaFila > Every 5 minutes</span>
+
+<span class="comment">// Para adicionar audios manualmente:</span>
+enfileirarAudios()</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h5>Funcoes de diagnostico</h5>
+                    <p><code>verStatusFila()</code> — mostra estado da fila e processamento atual</p>
+                    <p><code>limparFilaCompleta()</code> — reseta fila e estado</p>
+                    <p><code>forcarReprocessamento(fileId)</code> — reprocessa um arquivo especifico</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Formatos Suportados</h2>
+            <div class="card">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <span class="badge badge-green">.mp3</span>
+                    <span class="badge badge-green">.m4a</span>
+                    <span class="badge badge-green">.wav</span>
+                    <span class="badge badge-green">.ogg</span>
+                    <span class="badge badge-green">.aac</span>
+                    <span class="badge badge-green">.flac</span>
+                </div>
+                <p style="margin-top: 16px; color: #a1a1aa;">O formato .m4a e o usado pelo Plaud e outros gravadores de voz.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Seguranca</h2>
+            <div class="card">
+                <div class="security-item">
+                    <span class="security-icon">🔐</span>
+                    <div>
+                        <p><strong>API Keys via variavel de ambiente</strong> — Nenhuma chave hardcoded no codigo. Scripts Python leem de <code>GEMINI_API_KEY</code> (env var). Apps Script le de Propriedades do Script.</p>
+                    </div>
+                </div>
+                <div class="security-item">
+                    <span class="security-icon">📁</span>
+                    <div>
+                        <p><strong>.gitignore configurado</strong> — Arquivos <code>.env</code>, audios e venvs sao ignorados pelo git.</p>
+                    </div>
+                </div>
+                <div class="security-item">
+                    <span class="security-icon">🚫</span>
+                    <div>
+                        <p><strong>Sem dados sensiveis</strong> — Folder IDs do Drive e output paths sao configurados externamente, nunca no codigo.</p>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <h5>Antes de compartilhar</h5>
+                    <p>Verifique que seu <code>~/.zshrc</code> ou <code>~/.bashrc</code> nao esta commitado — ele contem a <code>GEMINI_API_KEY</code>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Exemplo de Saida</h2>
+            <div class="card">
+                <div class="code-block">
+                    <code><span class="comment"># 2026-04-02 — Reuniao Semanal.md</span>
+
+# Reuniao Semanal
+
+**Arquivo original:** 2026-04-02_meeting.m4a
+**Data:** 2026-04-02
+
+---
+
+## Transcricao
+
+Orador 1: Bom dia, pessoal. Vamos comecar?
+Orador 2: Vamos la.
+Orador 1: Primeiro ponto, como esta o andamento do projeto?
+Orador 2: Estamos no prazo. Finalizamos a etapa de testes ontem.
+...</code>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Troubleshooting</h2>
+
+            <div class="card">
+                <h3>Erro: GEMINI_API_KEY nao definida</h3>
+                <p>Configure a variavel de ambiente:</p>
+                <div class="code-block">
+                    <code><span class="command">export</span> GEMINI_API_KEY=<span class="string">"sua_key"</span></code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Erro: pydub nao instalado</h3>
+                <p>Ative o venv e instale:</p>
+                <div class="code-block">
+                    <code><span class="command">source</span> ~/venvs/transcribe/bin/activate
+<span class="command">pip</span> install pydub google-generativeai</code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Erro: ffmpeg nao encontrado</h3>
+                <div class="code-block">
+                    <code><span class="command">sudo apt</span> install ffmpeg</code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Rate limit / 429 Error</h3>
+                <p><code>transcribe_segment.py</code> ja tem retry automatico. Para <code>transcribe_audio.py</code>, reduza segmentos:</p>
+                <div class="code-block">
+                    <code><span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span></code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Apps Script: Timeout / Estado travado</h3>
+                <p>O sistema de fila retoma automaticamente. Se travar, use:</p>
+                <div class="code-block">
+                    <code><span class="comment">// Ver estado atual</span>
+verStatusFila()
+
+<span class="comment">// Se travou, limpar e recomecar</span>
+limparFilaCompleta()
+enfileirarAudios()</code>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Audio Transcribe — Gemini AI</p>
+            <p style="margin-top: 8px;">Python 3.12+ | Google Apps Script | Gemini 2.5 Flash</p>
+        </footer>
+    </div>
+</body>
+</html>
