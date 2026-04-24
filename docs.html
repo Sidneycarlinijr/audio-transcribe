@@ -177,41 +177,6 @@
             margin-bottom: 8px;
         }
 
-        .success-box {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 16px 0;
-        }
-
-        .success-box h5 {
-            color: #10b981;
-            margin-bottom: 8px;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 16px 0;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .comparison-table th {
-            color: #fff;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .comparison-table td {
-            color: #a1a1aa;
-        }
-
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -311,11 +276,10 @@
     <div class="container">
         <header class="header">
             <h1>Audio Transcribe</h1>
-            <p class="subtitle">Transcreva audios usando Gemini AI — local ou via Google Drive</p>
+            <p class="subtitle">Transcreva audios usando Gemini AI via linha de comando</p>
             <div style="margin-top: 20px;">
                 <span class="badge badge-green">Python 3.12+</span>
                 <span class="badge badge-blue">Gemini 2.5 Flash</span>
-                <span class="badge badge-purple">Google Apps Script</span>
                 <span class="badge badge-orange">Speaker ID</span>
             </div>
         </header>
@@ -344,14 +308,14 @@
                     <p>Gera titulo automaticamente</p>
                 </div>
                 <div class="feature-item">
-                    <div class="icon">☁️</div>
-                    <h4>Google Drive</h4>
-                    <p>Versao cloud com fila automatica</p>
-                </div>
-                <div class="feature-item">
                     <div class="icon">🔄</div>
                     <h4>Retry Automatico</h4>
                     <p>Rate limiting com backoff exponencial</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📁</div>
+                    <h4>Batch Processing</h4>
+                    <p>Processa pastas inteiras de uma vez</p>
                 </div>
             </div>
         </section>
@@ -361,7 +325,6 @@
             <div class="arch-diagram">
 <pre>
 <span class="accent">┌─────────────────────────────────────────────────────────┐</span>
-<span class="accent">│</span>  <span class="highlight">LOCAL (Python)</span>                                          <span class="accent">│</span>
 <span class="accent">│</span>                                                         <span class="accent">│</span>
 <span class="accent">│</span>  audio.mp3 ──► <span class="highlight">split_audio.py</span> ──► segmentos/             <span class="accent">│</span>
 <span class="accent">│</span>                      │                                  <span class="accent">│</span>
@@ -369,28 +332,18 @@
 <span class="accent">│</span>  audio.mp3 ──► <span class="highlight">transcribe_audio.py</span> ──► Markdown (.md)    <span class="accent">│</span>
 <span class="accent">│</span>                 (split + transcribe + join)              <span class="accent">│</span>
 <span class="accent">│</span>                      │                                  <span class="accent">│</span>
-<span class="accent">│</span>                      ├──► <span class="warn">Gemini API</span> (por segmento)      <span class="accent">│</span>
-<span class="accent">│</span>                      │                                  <span class="accent">│</span>
+<span class="accent">│</span>                      └──► <span class="warn">Gemini API</span> (por segmento)      <span class="accent">│</span>
+<span class="accent">│</span>                                                         <span class="accent">│</span>
 <span class="accent">│</span>  segment.mp3 ► <span class="highlight">transcribe_segment.py</span> ──► stdout         <span class="accent">│</span>
 <span class="accent">│</span>                 (single file, retry logic)               <span class="accent">│</span>
-<span class="accent">└─────────────────────────────────────────────────────────┘</span>
-
-<span class="accent">┌─────────────────────────────────────────────────────────┐</span>
-<span class="accent">│</span>  <span class="highlight">CLOUD (Google Apps Script)</span>                              <span class="accent">│</span>
 <span class="accent">│</span>                                                         <span class="accent">│</span>
-<span class="accent">│</span>  Drive folder ──► <span class="highlight">audio-transcription-queue.gs</span>          <span class="accent">│</span>
-<span class="accent">│</span>                    │                                    <span class="accent">│</span>
-<span class="accent">│</span>                    ├──► Fila persistente (Properties)    <span class="accent">│</span>
-<span class="accent">│</span>                    ├──► Upload resumable (8MB chunks)    <span class="accent">│</span>
-<span class="accent">│</span>                    ├──► <span class="warn">Gemini API</span> (transcricao)          <span class="accent">│</span>
-<span class="accent">│</span>                    └──► Google Docs (saida)              <span class="accent">│</span>
 <span class="accent">└─────────────────────────────────────────────────────────┘</span>
 </pre>
             </div>
         </section>
 
         <section class="section">
-            <h2 class="section-title">Scripts Disponiveis</h2>
+            <h2 class="section-title">Scripts</h2>
 
             <div class="card">
                 <h3>transcribe_audio.py <span class="badge badge-green">Principal</span></h3>
@@ -424,66 +377,10 @@
                 </div>
                 <p style="margin-top: 8px;"><strong>Retry:</strong> 3 tentativas, backoff de 40s * tentativa</p>
             </div>
-
-            <div class="card">
-                <h3>audio-transcription-queue.gs <span class="badge badge-orange">Cloud</span></h3>
-                <p>Versao Google Apps Script para processar audios diretamente do Google Drive. Sistema de fila persistente com upload resumable (chunks de 8MB), estado recuperavel e saida em Google Docs.</p>
-                <div class="highlight-box">
-                    <h5>Quando usar a versao cloud?</h5>
-                    <p>Quando voce quer processar audios automaticamente sem rodar nada local. Basta jogar o audio numa pasta do Drive e o trigger processa sozinho.</p>
-                </div>
-                <p><strong>Limitacao:</strong> Timeout de 6 minutos por execucao (contornado com fila + estado persistente).</p>
-            </div>
         </section>
 
         <section class="section">
-            <h2 class="section-title">Comparacao: Local vs Cloud</h2>
-            <table class="comparison-table">
-                <tr>
-                    <th>Aspecto</th>
-                    <th>Python (Local)</th>
-                    <th>Apps Script (Cloud)</th>
-                </tr>
-                <tr>
-                    <td>Timeout</td>
-                    <td>Sem limite</td>
-                    <td>6 min/execucao (fila contorna)</td>
-                </tr>
-                <tr>
-                    <td>Tamanho Audio</td>
-                    <td>Qualquer</td>
-                    <td>Qualquer (upload resumable)</td>
-                </tr>
-                <tr>
-                    <td>Onde Roda</td>
-                    <td>Seu computador</td>
-                    <td>Google Cloud</td>
-                </tr>
-                <tr>
-                    <td>Automatico</td>
-                    <td>Manual (CLI)</td>
-                    <td>Sim (trigger a cada 5-10 min)</td>
-                </tr>
-                <tr>
-                    <td>Saida</td>
-                    <td>Markdown local</td>
-                    <td>Google Docs no Drive</td>
-                </tr>
-                <tr>
-                    <td>Dependencias</td>
-                    <td>Python, ffmpeg, pydub</td>
-                    <td>Nenhuma (roda no Google)</td>
-                </tr>
-                <tr>
-                    <td>Retry</td>
-                    <td>Sim (transcribe_segment.py)</td>
-                    <td>Sim (estado persistente)</td>
-                </tr>
-            </table>
-        </section>
-
-        <section class="section">
-            <h2 class="section-title">Setup: Python (Local)</h2>
+            <h2 class="section-title">Setup</h2>
             <div class="card">
                 <div class="steps">
                     <div class="step">
@@ -520,64 +417,6 @@
         </section>
 
         <section class="section">
-            <h2 class="section-title">Setup: Google Apps Script (Cloud)</h2>
-            <div class="card">
-                <div class="steps">
-                    <div class="step">
-                        <h4>Criar projeto no Apps Script</h4>
-                        <p>Va em <a href="https://script.google.com" target="_blank">script.google.com</a> e crie um novo projeto. Cole o conteudo de <code>audio-transcription-queue.gs</code>.</p>
-                    </div>
-                    <div class="step">
-                        <h4>Ativar Drive API</h4>
-                        <p>No editor, va em Servicos (+) e adicione <strong>Drive API v3</strong>.</p>
-                    </div>
-                    <div class="step">
-                        <h4>Configurar Propriedades do Script</h4>
-                        <p>Va em Configuracoes do Projeto > Propriedades do script e adicione:</p>
-                        <table class="comparison-table">
-                            <tr>
-                                <th>Propriedade</th>
-                                <th>Valor</th>
-                            </tr>
-                            <tr>
-                                <td><code>GEMINI_API_KEY</code></td>
-                                <td>Sua key do Google AI Studio</td>
-                            </tr>
-                            <tr>
-                                <td><code>FOLDER_ID</code></td>
-                                <td>ID da pasta do Drive com os audios</td>
-                            </tr>
-                            <tr>
-                                <td><code>OUTPUT_FOLDER_ID</code></td>
-                                <td>ID da pasta do Drive para saida</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="step">
-                        <h4>Inicializar e criar trigger</h4>
-                        <div class="code-block">
-                            <code><span class="comment">// Execute uma vez:</span>
-inicializarSistema()
-
-<span class="comment">// Depois configure trigger:</span>
-<span class="comment">// Triggers > Add trigger > processarProximoDaFila > Every 5 minutes</span>
-
-<span class="comment">// Para adicionar audios manualmente:</span>
-enfileirarAudios()</code>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="highlight-box">
-                    <h5>Funcoes de diagnostico</h5>
-                    <p><code>verStatusFila()</code> — mostra estado da fila e processamento atual</p>
-                    <p><code>limparFilaCompleta()</code> — reseta fila e estado</p>
-                    <p><code>forcarReprocessamento(fileId)</code> — reprocessa um arquivo especifico</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="section">
             <h2 class="section-title">Formatos Suportados</h2>
             <div class="card">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -598,19 +437,13 @@ enfileirarAudios()</code>
                 <div class="security-item">
                     <span class="security-icon">🔐</span>
                     <div>
-                        <p><strong>API Keys via variavel de ambiente</strong> — Nenhuma chave hardcoded no codigo. Scripts Python leem de <code>GEMINI_API_KEY</code> (env var). Apps Script le de Propriedades do Script.</p>
+                        <p><strong>API Key via variavel de ambiente</strong> — Nenhuma chave hardcoded no codigo. Scripts leem de <code>GEMINI_API_KEY</code> (env var).</p>
                     </div>
                 </div>
                 <div class="security-item">
                     <span class="security-icon">📁</span>
                     <div>
                         <p><strong>.gitignore configurado</strong> — Arquivos <code>.env</code>, audios e venvs sao ignorados pelo git.</p>
-                    </div>
-                </div>
-                <div class="security-item">
-                    <span class="security-icon">🚫</span>
-                    <div>
-                        <p><strong>Sem dados sensiveis</strong> — Folder IDs do Drive e output paths sao configurados externamente, nunca no codigo.</p>
                     </div>
                 </div>
 
@@ -679,24 +512,11 @@ Orador 2: Estamos no prazo. Finalizamos a etapa de testes ontem.
                     <code><span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span></code>
                 </div>
             </div>
-
-            <div class="card">
-                <h3>Apps Script: Timeout / Estado travado</h3>
-                <p>O sistema de fila retoma automaticamente. Se travar, use:</p>
-                <div class="code-block">
-                    <code><span class="comment">// Ver estado atual</span>
-verStatusFila()
-
-<span class="comment">// Se travou, limpar e recomecar</span>
-limparFilaCompleta()
-enfileirarAudios()</code>
-                </div>
-            </div>
         </section>
 
         <footer class="footer">
             <p>Audio Transcribe — Gemini AI</p>
-            <p style="margin-top: 8px;">Python 3.12+ | Google Apps Script | Gemini 2.5 Flash</p>
+            <p style="margin-top: 8px;">Python 3.12+ | Gemini 2.5 Flash</p>
         </footer>
     </div>
 </body>

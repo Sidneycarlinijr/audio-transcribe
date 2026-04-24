@@ -1,4 +1,4 @@
-# Scripts - Transcribe Audio
+# Audio Transcribe
 
 Transcreve audios usando Gemini AI com identificacao de oradores e extracao de tema.
 
@@ -57,7 +57,7 @@ mp3, m4a, wav, ogg, aac, flac
 |--------|-----------|
 | `transcribe_audio.py` | Transcreve audios usando Gemini (divide, transcreve, junta) |
 | `split_audio.py` | Apenas divide audios longos em partes de 30 min |
-| `audio-transcription-queue.gs` | Versao Google Apps Script (limite de 6 min) |
+| `transcribe_segment.py` | Transcreve um unico segmento com retry automatico |
 
 ## Troubleshooting
 
