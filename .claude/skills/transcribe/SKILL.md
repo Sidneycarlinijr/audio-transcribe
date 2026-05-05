@@ -1,12 +1,12 @@
 ---
 name: transcribe
-description: Transcribe audio files using Gemini AI. Use when the user asks to transcribe audio, convert recordings to text, or process meeting files.
+description: Transcribe audio files using Deepgram. Use when the user asks to transcribe audio, convert recordings to text, or process meeting files.
 type: workflow
 ---
 
 ## Purpose
 
-Transcribe audio files into text using the project's Python scripts powered by Gemini AI. Handles speaker identification, automatic segmentation of long files, and theme extraction.
+Transcribe audio files into text using the project's Python scripts powered by Deepgram. Handles native speaker diarization, long audio files, and theme extraction.
 
 ## When to Use
 
@@ -21,9 +21,9 @@ Transcribe audio files into text using the project's Python scripts powered by G
 
 2. **Check prerequisites** before running:
    ```bash
-   # Verify GEMINI_API_KEY is set
-   echo $GEMINI_API_KEY | head -c 4
-   # Should print "AIza" — if empty, tell user to set it
+   # Verify DEEPGRAM_API_KEY is set
+   echo $DEEPGRAM_API_KEY | head -c 4
+   # Should print something — if empty, tell user to set it
    ```
 
 3. **Run transcription** using the venv:
@@ -33,7 +33,7 @@ Transcribe audio files into text using the project's Python scripts powered by G
    If venv doesn't exist, set it up first:
    ```bash
    python3 -m venv ~/venvs/transcribe
-   ~/venvs/transcribe/bin/pip install google-generativeai pydub
+   ~/venvs/transcribe/bin/pip install deepgram-sdk pydub
    ```
 
 4. **Find the output** in `~/Documentos/Transcricoes/` — the most recently created `.md` file.
@@ -49,7 +49,6 @@ Transcribe audio files into text using the project's Python scripts powered by G
 | Flag | Effect |
 |------|--------|
 | `--folder <path>` | Transcribe all audio files in a directory |
-| `--segment-duration <min>` | Change segment length (default: 10 min, use 5 if rate limited) |
 | `--output <path>` | Change output directory |
 
 ## Splitting Only
@@ -61,13 +60,7 @@ If the user just wants to split audio without transcribing:
 
 ## Single Segment
 
-For transcribing one segment with retry logic (output to stdout):
+For transcribing one file with output to stdout:
 ```bash
 ~/venvs/transcribe/bin/python transcribe_segment.py <audio_file>
 ```
-
-## Troubleshooting
-
-- **Rate limit (429):** Use `--segment-duration 5` to send smaller chunks
-- **Missing ffmpeg:** `sudo apt install ffmpeg`
-- **Missing deps:** `~/venvs/transcribe/bin/pip install google-generativeai pydub`

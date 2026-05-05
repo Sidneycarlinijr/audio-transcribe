@@ -1,59 +1,53 @@
 #!/usr/bin/env python3
 """
-Script para transcrever áudios longos usando Gemini.
-Divide áudios em partes menores, transcreve cada parte e junta o resultado.
+Script para transcrever áudios usando Deepgram.
+Suporta áudios longos nativamente (sem necessidade de dividir).
 
 Uso:
     python transcribe_audio.py <caminho_do_audio>
     python transcribe_audio.py --folder <pasta_com_audios>
 
 Requisitos:
-    pip install google-generativeai pydub
+    pip install deepgram-sdk pydub
 
 Configuração:
-    export GEMINI_API_KEY="sua_chave_aqui"
+    export DEEPGRAM_API_KEY="sua_chave_aqui"
 """
 
 import os
 import sys
 import argparse
-import tempfile
-import shutil
 from pathlib import Path
 from datetime import datetime
 
 try:
     from pydub import AudioSegment
 except ImportError:
-    print("❌ Erro: pydub não instalado. Execute: pip install pydub")
+    print("Erro: pydub não instalado. Execute: pip install pydub")
     sys.exit(1)
 
 try:
-    import google.generativeai as genai
+    from deepgram import DeepgramClient
 except ImportError:
-    print("❌ Erro: google-generativeai não instalado. Execute: pip install google-generativeai")
+    print("Erro: deepgram-sdk não instalado. Execute: pip install deepgram-sdk")
     sys.exit(1)
 
 
-SEGMENT_DURATION_MS = 30 * 60 * 1000  # 30 minutos em milissegundos
 OUTPUT_DIR = Path.home() / "Documentos" / "Transcricoes"
 SUPPORTED_FORMATS = {'.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac'}
 
 
-def setup_gemini():
-    api_key = os.environ.get('GEMINI_API_KEY')
+def setup_deepgram():
+    api_key = os.environ.get('DEEPGRAM_API_KEY')
     if not api_key:
-        print("❌ Erro: GEMINI_API_KEY não definida.")
-        print("   Execute: export GEMINI_API_KEY='sua_chave'")
+        print("Erro: DEEPGRAM_API_KEY não definida.")
+        print("   Execute: export DEEPGRAM_API_KEY='sua_chave'")
         sys.exit(1)
 
-    genai.configure(api_key=api_key)
-    return genai.GenerativeModel('gemini-2.5-flash')
+    return DeepgramClient(api_key=api_key)
 
 
-def split_audio(audio_path: Path, segment_duration_ms: int = SEGMENT_DURATION_MS) -> list[Path]:
-    print(f"📂 Carregando áudio: {audio_path.name}")
-
+def get_audio_duration(audio_path: Path) -> float:
     suffix = audio_path.suffix.lower()
     if suffix == '.m4a':
         audio = AudioSegment.from_file(audio_path, format='m4a')
@@ -66,77 +60,60 @@ def split_audio(audio_path: Path, segment_duration_ms: int = SEGMENT_DURATION_MS
     else:
         audio = AudioSegment.from_file(audio_path)
 
-    duration_ms = len(audio)
-    duration_min = duration_ms / 1000 / 60
+    return len(audio) / 1000 / 60
+
+
+def transcribe_audio(client, audio_path: Path) -> str:
+    print(f"Transcrevendo: {audio_path.name}")
+
+    duration_min = get_audio_duration(audio_path)
     print(f"   Duração: {duration_min:.1f} minutos")
 
-    if duration_ms <= segment_duration_ms:
-        print("   Áudio curto, não precisa dividir.")
-        return [audio_path]
+    with open(audio_path, "rb") as f:
+        buffer_data = f.read()
 
-    num_segments = (duration_ms + segment_duration_ms - 1) // segment_duration_ms
-    print(f"   Dividindo em {num_segments} partes...")
+    print("   Enviando para Deepgram...")
+    response = client.listen.v1.media.transcribe_file(
+        request=buffer_data,
+        model="nova-2",
+        language="pt-BR",
+        smart_format=True,
+        punctuate=True,
+        diarize=True,
+        utterances=True,
+    )
 
-    temp_dir = Path(tempfile.mkdtemp(prefix='audio_segments_'))
-    segments = []
+    if response.results and response.results.utterances:
+        lines = []
+        for utt in response.results.utterances:
+            speaker = utt.speaker + 1
+            lines.append(f"Orador {speaker}: {utt.transcript}")
+        return "\n".join(lines)
 
-    for i in range(num_segments):
-        start = i * segment_duration_ms
-        end = min((i + 1) * segment_duration_ms, duration_ms)
+    if response.results and response.results.channels:
+        alt = response.results.channels[0].alternatives[0]
+        if alt and alt.transcript:
+            return alt.transcript
 
-        segment = audio[start:end]
-        segment_path = temp_dir / f"segment_{i+1:03d}.mp3"
-        segment.export(segment_path, format='mp3')
-        segments.append(segment_path)
-
-        print(f"   ✓ Parte {i+1}/{num_segments} criada")
-
-    return segments
-
-
-def transcribe_segment(model, audio_path: Path, segment_num: int, total_segments: int) -> str:
-    print(f"🎙️ Transcrevendo parte {segment_num}/{total_segments}...")
-
-    audio_file = genai.upload_file(audio_path)
-
-    while audio_file.state.name == "PROCESSING":
-        import time
-        time.sleep(2)
-        audio_file = genai.get_file(audio_file.name)
-
-    if audio_file.state.name == "FAILED":
-        raise Exception(f"Falha no upload do arquivo: {audio_file.name}")
-
-    prompt = """Transcreva este áudio integralmente em português do Brasil.
-Identifique os diferentes oradores (ex: Orador 1, Orador 2) sempre que a voz mudar.
-Formate como: "Orador X: [fala]".
-Retorne APENAS a transcrição, sem comentários ou análises."""
-
-    response = model.generate_content([prompt, audio_file])
-
-    try:
-        genai.delete_file(audio_file.name)
-    except:
-        pass
-
-    return response.text
+    return "[Sem conteúdo audível]"
 
 
-def extract_theme(model, transcription: str) -> str:
-    print("🧠 Extraindo tema...")
+def extract_theme(transcript: str) -> str:
+    lines = transcript[:2000].split('\n')
+    words = []
+    for line in lines[:5]:
+        clean = line.split(':', 1)[-1].strip() if ':' in line else line.strip()
+        words.extend(clean.split()[:8])
+        if len(words) >= 10:
+            break
 
-    prompt = f"""Analise esta transcrição e retorne APENAS um título curto (máximo 40 caracteres)
-que descreva o tema principal da conversa. Sem aspas, sem explicações, apenas o título.
-
-TRANSCRIÇÃO (primeiros 2000 chars):
-{transcription[:2000]}"""
-
-    try:
-        response = model.generate_content(prompt)
-        theme = response.text.strip().replace('"', '').replace('\n', '')[:40]
+    if words:
+        theme = ' '.join(words[:6])
+        if len(theme) > 40:
+            theme = theme[:37] + '...'
         return theme
-    except:
-        return "Reunião"
+
+    return "Reunião"
 
 
 def save_transcription(audio_name: str, theme: str, transcription: str) -> Path:
@@ -166,33 +143,20 @@ def save_transcription(audio_name: str, theme: str, transcription: str) -> Path:
 
 def process_audio(audio_path: Path):
     print(f"\n{'='*50}")
-    print(f"🚀 Processando: {audio_path.name}")
+    print(f"Processando: {audio_path.name}")
     print('='*50)
 
-    model = setup_gemini()
-    segments = split_audio(audio_path)
-    temp_dir = segments[0].parent if len(segments) > 1 else None
+    client = setup_deepgram()
+    transcription = transcribe_audio(client, audio_path)
 
-    transcriptions = []
+    print(f"\nTranscrição completa: {len(transcription)} caracteres")
 
-    try:
-        for i, segment_path in enumerate(segments, 1):
-            text = transcribe_segment(model, segment_path, i, len(segments))
-            transcriptions.append(text)
-            print(f"   ✓ Parte {i} transcrita ({len(text)} caracteres)")
-    finally:
-        if temp_dir and temp_dir.exists() and 'audio_segments_' in str(temp_dir):
-            shutil.rmtree(temp_dir)
-
-    full_transcription = "\n\n".join(transcriptions)
-    print(f"\n📝 Transcrição completa: {len(full_transcription)} caracteres")
-
-    theme = extract_theme(model, full_transcription)
+    theme = extract_theme(transcription)
     print(f"   Tema: {theme}")
 
-    output_path = save_transcription(audio_path.name, theme, full_transcription)
+    output_path = save_transcription(audio_path.name, theme, transcription)
 
-    print(f"\n🎉 SUCESSO!")
+    print(f"\nSUCESSO!")
     print(f"   Arquivo salvo em: {output_path}")
 
     return output_path
@@ -205,41 +169,34 @@ def process_folder(folder_path: Path):
     ]
 
     if not audio_files:
-        print(f"❌ Nenhum arquivo de áudio encontrado em: {folder_path}")
+        print(f"Nenhum arquivo de áudio encontrado em: {folder_path}")
         return
 
-    print(f"📁 Encontrados {len(audio_files)} arquivos de áudio")
+    print(f"Encontrados {len(audio_files)} arquivos de áudio")
 
     for audio_file in sorted(audio_files):
         try:
             process_audio(audio_file)
         except Exception as e:
-            print(f"❌ Erro ao processar {audio_file.name}: {e}")
+            print(f"Erro ao processar {audio_file.name}: {e}")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Transcreve áudios usando Gemini AI',
+        description='Transcreve áudios usando Deepgram',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos:
     python transcribe_audio.py audio.mp3
     python transcribe_audio.py --folder ~/Audios
-    python transcribe_audio.py --folder ~/Audios --segment-duration 5
         """
     )
 
     parser.add_argument('audio', nargs='?', help='Caminho do arquivo de áudio')
     parser.add_argument('--folder', '-f', help='Pasta com arquivos de áudio')
-    parser.add_argument('--segment-duration', '-s', type=int, default=10,
-                        help='Duração de cada segmento em minutos (padrão: 10)')
     parser.add_argument('--output', '-o', help='Pasta de saída para transcrições')
 
     args = parser.parse_args()
-
-    if args.segment_duration:
-        global SEGMENT_DURATION_MS
-        SEGMENT_DURATION_MS = args.segment_duration * 60 * 1000
 
     if args.output:
         global OUTPUT_DIR
@@ -248,13 +205,13 @@ Exemplos:
     if args.folder:
         folder_path = Path(args.folder).expanduser()
         if not folder_path.exists():
-            print(f"❌ Pasta não encontrada: {folder_path}")
+            print(f"Pasta não encontrada: {folder_path}")
             sys.exit(1)
         process_folder(folder_path)
     elif args.audio:
         audio_path = Path(args.audio).expanduser()
         if not audio_path.exists():
-            print(f"❌ Arquivo não encontrado: {audio_path}")
+            print(f"Arquivo não encontrado: {audio_path}")
             sys.exit(1)
         process_audio(audio_path)
     else:
