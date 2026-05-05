@@ -1,6 +1,6 @@
 # Audio Transcribe
 
-Transcribe audio files using Gemini AI with speaker identification and automatic theme extraction.
+Transcribe audio files using Deepgram with native speaker diarization and automatic theme extraction.
 
 ## How to Use
 
@@ -29,9 +29,6 @@ python transcribe_audio.py audio.mp3
 # Entire folder
 python transcribe_audio.py --folder ~/Audios
 
-# Shorter segments (if rate limited)
-python transcribe_audio.py audio.mp3 --segment-duration 5
-
 # Custom output directory
 python transcribe_audio.py audio.mp3 --output ~/Transcriptions
 ```
@@ -42,14 +39,14 @@ python transcribe_audio.py audio.mp3 --output ~/Transcriptions
 # 1. Create venv and install dependencies
 python3 -m venv ~/venvs/transcribe
 source ~/venvs/transcribe/bin/activate
-pip install google-generativeai pydub
+pip install deepgram-sdk pydub
 
 # 2. Install ffmpeg
 sudo apt install ffmpeg
 
 # 3. Configure API key
-export GEMINI_API_KEY="your_key_here"
-# Get one at: https://aistudio.google.com/app/apikey
+export DEEPGRAM_API_KEY="your_key_here"
+# Get one at: https://console.deepgram.com (free $200 credit, no credit card)
 # Add to ~/.zshrc to persist
 
 # 4. Alias (optional)
@@ -58,17 +55,17 @@ alias transcribe="~/venvs/transcribe/bin/python ~/path/to/transcribe_audio.py"
 
 ### API Key — Free Tier
 
-Works without a credit card. Limits: 10 req/min, 250 req/day, 250k tokens/min.
+$200 in free credits on signup. No credit card required. No expiration.
 
-> **Privacy:** On the free tier, your data may be used for model training.
+At ~$0.0043/min, that's roughly **770 hours** of audio transcription.
 
 ## Scripts
 
 | Script | Description |
 |--------|-------------|
-| `transcribe_audio.py` | Full pipeline: split + transcribe + join → Markdown |
-| `split_audio.py` | Split long audio into 30-min segments (no AI) |
-| `transcribe_segment.py` | Transcribe a single file with automatic retry |
+| `transcribe_audio.py` | Full pipeline: transcribe + theme extraction → Markdown |
+| `split_audio.py` | Split long audio into 30-min segments (no AI, standalone utility) |
+| `transcribe_segment.py` | Transcribe a single file, output to stdout |
 
 ## Output
 
@@ -85,7 +82,7 @@ mp3, m4a, wav, ogg, aac, flac
 
 | Error | Fix |
 |-------|-----|
-| `GEMINI_API_KEY not set` | `export GEMINI_API_KEY="key"` in `~/.zshrc` |
+| `DEEPGRAM_API_KEY not set` | `export DEEPGRAM_API_KEY="key"` in `~/.zshrc` |
+| `deepgram-sdk not installed` | `pip install deepgram-sdk` in the venv |
 | `pydub not installed` | `pip install pydub` in the venv |
 | `ffmpeg not found` | `sudo apt install ffmpeg` |
-| Rate limit / 429 | Use `--segment-duration 5` |

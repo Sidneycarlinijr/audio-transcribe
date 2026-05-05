@@ -276,11 +276,11 @@
     <div class="container">
         <header class="header">
             <h1>Audio Transcribe</h1>
-            <p class="subtitle">Transcreva audios usando Gemini AI via linha de comando</p>
+            <p class="subtitle">Transcreva audios usando Deepgram via linha de comando</p>
             <div style="margin-top: 20px;">
                 <span class="badge badge-green">Python 3.12+</span>
-                <span class="badge badge-blue">Gemini 2.5 Flash</span>
-                <span class="badge badge-orange">Speaker ID</span>
+                <span class="badge badge-blue">Deepgram Nova-2</span>
+                <span class="badge badge-orange">Speaker Diarization</span>
             </div>
         </header>
 
@@ -311,8 +311,8 @@
 <span class="comment"># Pasta inteira</span>
 <span class="command">python</span> transcribe_audio.py <span class="string">--folder</span> ~/Audios
 
-<span class="comment"># Segmentos menores (se der rate limit)</span>
-<span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span></code>
+<span class="comment"># Diretorio de saida customizado</span>
+<span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--output</span> ~/Transcricoes</code>
                 </div>
                 <p style="margin-top: 8px;"><strong>Saida:</strong> <code>~/Documentos/Transcricoes/2026-04-02 — Tema.md</code></p>
             </div>
@@ -324,17 +324,17 @@
                 <div class="feature-item">
                     <div class="icon">🎙️</div>
                     <h4>Transcreve Audios</h4>
-                    <p>Converte audio em texto usando Gemini AI</p>
+                    <p>Converte audio em texto usando Deepgram Nova-2</p>
                 </div>
                 <div class="feature-item">
                     <div class="icon">👥</div>
-                    <h4>Identifica Oradores</h4>
-                    <p>"Orador 1", "Orador 2", etc</p>
+                    <h4>Diarizacao Nativa</h4>
+                    <p>"Orador 1", "Orador 2" — identificacao real de voz</p>
                 </div>
                 <div class="feature-item">
-                    <div class="icon">✂️</div>
-                    <h4>Divide Automatico</h4>
-                    <p>Audios longos em partes menores</p>
+                    <div class="icon">⏱️</div>
+                    <h4>Audios Longos</h4>
+                    <p>Suporta 1h+ sem precisar dividir</p>
                 </div>
                 <div class="feature-item">
                     <div class="icon">🧠</div>
@@ -342,9 +342,9 @@
                     <p>Gera titulo automaticamente</p>
                 </div>
                 <div class="feature-item">
-                    <div class="icon">🔄</div>
-                    <h4>Retry Automatico</h4>
-                    <p>Rate limiting com backoff exponencial</p>
+                    <div class="icon">⚡</div>
+                    <h4>Rapido</h4>
+                    <p>Transcricao direta, sem upload/polling</p>
                 </div>
                 <div class="feature-item">
                     <div class="icon">📁</div>
@@ -360,16 +360,14 @@
 <pre>
 <span class="accent">┌─────────────────────────────────────────────────────────┐</span>
 <span class="accent">│</span>                                                         <span class="accent">│</span>
-<span class="accent">│</span>  audio.mp3 ──► <span class="highlight">split_audio.py</span> ──► segmentos/             <span class="accent">│</span>
-<span class="accent">│</span>                      │                                  <span class="accent">│</span>
-<span class="accent">│</span>                      ▼                                  <span class="accent">│</span>
 <span class="accent">│</span>  audio.mp3 ──► <span class="highlight">transcribe_audio.py</span> ──► Markdown (.md)    <span class="accent">│</span>
-<span class="accent">│</span>                 (split + transcribe + join)              <span class="accent">│</span>
 <span class="accent">│</span>                      │                                  <span class="accent">│</span>
-<span class="accent">│</span>                      └──► <span class="warn">Gemini API</span> (por segmento)      <span class="accent">│</span>
+<span class="accent">│</span>                      └──► <span class="warn">Deepgram API</span> (chamada unica)    <span class="accent">│</span>
 <span class="accent">│</span>                                                         <span class="accent">│</span>
 <span class="accent">│</span>  segment.mp3 ► <span class="highlight">transcribe_segment.py</span> ──► stdout         <span class="accent">│</span>
-<span class="accent">│</span>                 (single file, retry logic)               <span class="accent">│</span>
+<span class="accent">│</span>                                                         <span class="accent">│</span>
+<span class="accent">│</span>  audio.mp3 ──► <span class="highlight">split_audio.py</span> ──► segmentos/             <span class="accent">│</span>
+<span class="accent">│</span>                 (utilitario standalone)                   <span class="accent">│</span>
 <span class="accent">│</span>                                                         <span class="accent">│</span>
 <span class="accent">└─────────────────────────────────────────────────────────┘</span>
 </pre>
@@ -381,11 +379,10 @@
 
             <div class="card">
                 <h3>transcribe_audio.py <span class="badge badge-green">Principal</span></h3>
-                <p>Script completo: divide audios longos, transcreve cada segmento via Gemini, junta tudo e salva como Markdown com tema automatico.</p>
+                <p>Script completo: envia audio para Deepgram, recebe transcricao com diarizacao nativa, extrai tema e salva como Markdown.</p>
                 <div class="code-block">
                     <code><span class="command">python</span> transcribe_audio.py audio.mp3
 <span class="command">python</span> transcribe_audio.py <span class="string">--folder</span> ~/Audios
-<span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span>
 <span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--output</span> ~/Transcricoes</code>
                 </div>
                 <p style="margin-top: 8px;"><strong>Saida:</strong> <code>~/Documentos/Transcricoes/2026-04-02 — Tema.md</code></p>
@@ -393,7 +390,7 @@
 
             <div class="card">
                 <h3>split_audio.py <span class="badge badge-blue">Utilitario</span></h3>
-                <p>Apenas divide audios longos em segmentos menores (sem transcricao). Util para pre-processar antes de transcrever ou para enviar partes menores manualmente.</p>
+                <p>Apenas divide audios longos em segmentos menores (sem transcricao). Util para pre-processar ou enviar partes menores manualmente.</p>
                 <div class="code-block">
                     <code><span class="command">python</span> split_audio.py audio.mp3
 <span class="command">python</span> split_audio.py <span class="string">--folder</span> ~/Audios
@@ -405,11 +402,10 @@
 
             <div class="card">
                 <h3>transcribe_segment.py <span class="badge badge-purple">Leve</span></h3>
-                <p>Transcreve um unico arquivo de audio. Inclui retry com backoff exponencial para rate limiting. Saida via stdout — ideal para pipelines e composicao com outros scripts.</p>
+                <p>Transcreve um unico arquivo de audio. Saida via stdout — ideal para pipelines e composicao com outros scripts.</p>
                 <div class="code-block">
                     <code><span class="command">python</span> transcribe_segment.py audio.mp3 > transcricao.txt</code>
                 </div>
-                <p style="margin-top: 8px;"><strong>Retry:</strong> 3 tentativas, backoff de 40s * tentativa</p>
             </div>
         </section>
 
@@ -422,7 +418,7 @@
                         <div class="code-block">
                             <code><span class="command">python3</span> -m venv ~/venvs/transcribe
 <span class="command">source</span> ~/venvs/transcribe/bin/activate
-<span class="command">pip</span> install google-generativeai pydub</code>
+<span class="command">pip</span> install deepgram-sdk pydub</code>
                         </div>
                     </div>
                     <div class="step">
@@ -436,7 +432,7 @@
                         <p>Veja a secao detalhada abaixo.</p>
                         <div class="code-block">
                             <code><span class="comment"># Adicione ao ~/.zshrc ou ~/.bashrc</span>
-<span class="command">export</span> GEMINI_API_KEY=<span class="string">"sua_key_aqui"</span></code>
+<span class="command">export</span> DEEPGRAM_API_KEY=<span class="string">"sua_key_aqui"</span></code>
                         </div>
                     </div>
                     <div class="step">
@@ -457,26 +453,26 @@
                 <h3>Como gerar a chave</h3>
                 <div class="steps">
                     <div class="step">
-                        <h4>Acesse o Google AI Studio</h4>
-                        <p>Abra <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a> e faca login com sua conta Google.</p>
+                        <h4>Acesse o Deepgram Console</h4>
+                        <p>Abra <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a> e crie uma conta.</p>
                     </div>
                     <div class="step">
-                        <h4>Aceite os termos</h4>
-                        <p>Na primeira visita, aceite os Termos de Servico de IA Generativa e confirme sua regiao.</p>
+                        <h4>Crie um projeto</h4>
+                        <p>Um projeto padrao e criado automaticamente no signup.</p>
                     </div>
                     <div class="step">
-                        <h4>Clique em "Create API Key"</h4>
-                        <p>Um projeto Google Cloud e criado automaticamente (ou selecione um existente). Nao precisa configurar nada no GCP manualmente.</p>
+                        <h4>Gere uma API Key</h4>
+                        <p>Va em Settings > API Keys e clique em "Create a New API Key". Selecione as permissoes de "Member".</p>
                     </div>
                     <div class="step">
                         <h4>Copie a chave</h4>
-                        <p>A key comeca com <code>AIza</code> seguido de caracteres alfanumericos. Copie imediatamente — ela nao sera exibida novamente.</p>
+                        <p>Copie imediatamente — ela nao sera exibida novamente.</p>
                     </div>
                     <div class="step">
                         <h4>Configure no terminal</h4>
                         <div class="code-block">
                             <code><span class="comment"># Adicione ao ~/.zshrc (permanente)</span>
-<span class="command">export</span> GEMINI_API_KEY=<span class="string">"AIzaSy..."</span>
+<span class="command">export</span> DEEPGRAM_API_KEY=<span class="string">"sua_key_aqui"</span>
 
 <span class="comment"># Recarregue o shell</span>
 <span class="command">source</span> ~/.zshrc</code>
@@ -486,47 +482,40 @@
             </div>
 
             <div class="card">
-                <h3>Free Tier — Limites</h3>
-                <p>O tier gratuito funciona sem cadastrar cartao de credito.</p>
+                <h3>Free Tier — Creditos</h3>
+                <p>O tier gratuito oferece $200 em creditos no signup. Sem cartao de credito. Sem expiracao.</p>
                 <table class="comparison-table">
                     <tr>
-                        <th>Limite</th>
+                        <th>Item</th>
                         <th>Valor</th>
                     </tr>
                     <tr>
-                        <td>Requests por minuto</td>
-                        <td>10 RPM</td>
+                        <td>Credito inicial</td>
+                        <td><strong>$200</strong></td>
                     </tr>
                     <tr>
-                        <td>Requests por dia</td>
-                        <td>250 RPD</td>
+                        <td>Custo por minuto (nova-2)</td>
+                        <td>~$0.0043/min</td>
                     </tr>
                     <tr>
-                        <td>Tokens por minuto</td>
-                        <td>250.000 TPM</td>
+                        <td>Total de audio</td>
+                        <td><strong>~770 horas</strong></td>
                     </tr>
                     <tr>
-                        <td>Janela de contexto</td>
-                        <td>1.000.000 tokens</td>
+                        <td>Cartao de credito</td>
+                        <td>Nao necessario</td>
                     </tr>
                     <tr>
-                        <td>Custo</td>
-                        <td><strong>$0</strong></td>
+                        <td>Expiracao</td>
+                        <td>Sem expiracao</td>
                     </tr>
                 </table>
 
-                <div class="warning-box">
-                    <h5>Privacidade no free tier</h5>
-                    <p>No tier gratuito, seus prompts e respostas podem ser usados pelo Google para melhorar os modelos. Se voce transcreve audios com conteudo sensivel, considere usar o tier pago onde seus dados <strong>nao</strong> sao usados para treinamento.</p>
-                </div>
-
                 <div class="highlight-box">
                     <h5>Na pratica</h5>
-                    <p>250 requests/dia e suficiente para transcrever varios audios por dia. Um audio de 1 hora dividido em segmentos de 10 minutos usa 6 requests. O rate limit de 10 RPM pode causar espera entre segmentos — o <code>transcribe_segment.py</code> ja lida com isso automaticamente via retry.</p>
+                    <p>$200 e suficiente para transcrever centenas de reunioes. Um audio de 1.5 hora custa menos de $0.40. Sem limites de rate — transcreva quantos audios quiser simultaneamente.</p>
                 </div>
             </div>
-
-        </section>
 
         </section>
 
@@ -551,7 +540,7 @@
                 <div class="security-item">
                     <span class="security-icon">🔐</span>
                     <div>
-                        <p><strong>API Key via variavel de ambiente</strong> — Nenhuma chave hardcoded no codigo. Scripts leem de <code>GEMINI_API_KEY</code> (env var).</p>
+                        <p><strong>API Key via variavel de ambiente</strong> — Nenhuma chave hardcoded no codigo. Scripts leem de <code>DEEPGRAM_API_KEY</code> (env var).</p>
                     </div>
                 </div>
                 <div class="security-item">
@@ -563,7 +552,7 @@
 
                 <div class="warning-box">
                     <h5>Antes de compartilhar</h5>
-                    <p>Verifique que seu <code>~/.zshrc</code> ou <code>~/.bashrc</code> nao esta commitado — ele contem a <code>GEMINI_API_KEY</code>.</p>
+                    <p>Verifique que seu <code>~/.zshrc</code> ou <code>~/.bashrc</code> nao esta commitado — ele contem a <code>DEEPGRAM_API_KEY</code>.</p>
                 </div>
             </div>
         </section>
@@ -596,19 +585,19 @@ Orador 2: Estamos no prazo. Finalizamos a etapa de testes ontem.
             <h2 class="section-title">Troubleshooting</h2>
 
             <div class="card">
-                <h3>Erro: GEMINI_API_KEY nao definida</h3>
+                <h3>Erro: DEEPGRAM_API_KEY nao definida</h3>
                 <p>Configure a variavel de ambiente:</p>
                 <div class="code-block">
-                    <code><span class="command">export</span> GEMINI_API_KEY=<span class="string">"sua_key"</span></code>
+                    <code><span class="command">export</span> DEEPGRAM_API_KEY=<span class="string">"sua_key"</span></code>
                 </div>
             </div>
 
             <div class="card">
-                <h3>Erro: pydub nao instalado</h3>
+                <h3>Erro: deepgram-sdk nao instalado</h3>
                 <p>Ative o venv e instale:</p>
                 <div class="code-block">
                     <code><span class="command">source</span> ~/venvs/transcribe/bin/activate
-<span class="command">pip</span> install pydub google-generativeai</code>
+<span class="command">pip</span> install deepgram-sdk pydub</code>
                 </div>
             </div>
 
@@ -618,19 +607,11 @@ Orador 2: Estamos no prazo. Finalizamos a etapa de testes ontem.
                     <code><span class="command">sudo apt</span> install ffmpeg</code>
                 </div>
             </div>
-
-            <div class="card">
-                <h3>Rate limit / 429 Error</h3>
-                <p><code>transcribe_segment.py</code> ja tem retry automatico. Para <code>transcribe_audio.py</code>, reduza segmentos:</p>
-                <div class="code-block">
-                    <code><span class="command">python</span> transcribe_audio.py audio.mp3 <span class="string">--segment-duration 5</span></code>
-                </div>
-            </div>
         </section>
 
         <footer class="footer">
-            <p>Audio Transcribe — Gemini AI</p>
-            <p style="margin-top: 8px;">Python 3.12+ | Gemini 2.5 Flash</p>
+            <p>Audio Transcribe — Deepgram</p>
+            <p style="margin-top: 8px;">Python 3.12+ | Deepgram Nova-2</p>
         </footer>
     </div>
 </body>
